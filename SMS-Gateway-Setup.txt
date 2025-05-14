@@ -1,0 +1,111 @@
+********************** SMSGW Configuration ********************
+User /passwd :  beepcall/beppc@1l
+SMSC IP/port : 172.26.61.65 , 5002
+
+telnet 172.27.2.72 5001
+sucessfull
+
+/home/vccuser/development/]$ mkdir -p BeepCall/BeepGateway
+/home/vccuser/development/BeepCall/BeepGateway]$ cp -rv SMSGateway_Java/* BeepCall/BeepGateway
+/home/vccuser/development/BeepCall/BeepGateway]$ cd src/
+/home/vccuser/development/BeepCall/BeepGateway/src]$ mv SMSGateway_JAVA.jar BeepGateway.jar
+/home/vccuser/development/BeepCall/BeepGateway/src]$ mv runSMSGateway_JAVA.sh runBeepGateway.sh
+/home/vccuser/development/BeepCall/BeepGateway/src]$ vim properties/smsgateway.properties
+
+	DBUSER: bcs
+	DBPASSWORD: bcs
+	DB: DBURL=jdbc:mariadb://172.27.38.45:9050,172.27.38.132:9050/bcs?autoReconnectForPools=true&connectTimeout=10&failOverReadOnly=false&secondsBeforeRetryMaster=10&noAccessToProcedureBodies=true&useServerPrepStmts=true
+
+*****************************************************************************************
+
+>> mysql -ubcs -pbcs bcs -P9050 -h172.27.38.45
+SMSC_USER_ID: BeepCall
+SMSC_PASSWORD: BeP@121
+
+UPDATE  gmat_smsc_config SET SMSC_USER_ID = 'beepcall' WHERE  SMSC_ID=1;
+UPDATE  gmat_smsc_config SET SMSC_PASSWORD = 'beppc@1l' WHERE  SMSC_ID=1;
+UPDATE gmat_smsc_config set SMSC_IP='172.26.61.65' where SMSC_ID=1;
+UPDATE gmat_smsc_config set SMSC_PORT='5002' where SMSC_ID=1;
+UPDATE gmat_smsc_config set SYSTEM_TYPE='' where SMSC_ID=1;
+UPDATE  gmat_smsc_config SET window_size=2 WHERE  SMSC_ID=1;
+UPDATE  gmat_smsc_config SET NO_OF_CONNECTIONS=1 WHERE SMSC_ID=1;
+
+
+create folders and update path 
+*******************************************************************************************
+mkdir -p /home/vccuser/logs/BeepGateway/SubmitSmlog
+mkdir -p /home/vccuser/logs/BeepGateway/SubmitSmlogARCH/
+mkdir -p /home/vccuser/logs/BeepGateway/SubmitSmRes/
+mkdir -p /home/vccuser/logs/BeepGateway/SubmitSmResARCH/
+mkdir -p /home/vccuser/logs/BeepGateway/delRe/
+Mkdir -p /home/vccuser/logs/BeepGateway/delReArch/
+mkdir -p /home/vccuser/logs/BeepGateway/errlog/
+
+vim smsgateway.properties
+SUB_SM_LOG_FILE_INTERVAL=2
+SUB_SM_LOG_FILENAME=SubmitSmlog
+SUB_SM_LOG_FILEPATH=/home/vccuser/logs/BeepGateway/SubmitSmlog
+SUB_SM_LOG_FILEPATH_ARCH=/home/vccuser/logs/BeepGateway/SubmitSmlogARCH/
+SUB_SM_LOG_FILENAME_ARCH=SubmitSmlogArc
+###################### SUBMIT SM RESPONSE LOG FILE WRITER CONFIGURATIONS ######################
+SUB_RES_LOG_FILE_INTERVAL=2
+SUB_RES_LOG_FILENAME=SubmitSmResponselog
+SUB_RES_LOG_FILEPATH=/home/vccuser/logs/BeepGateway/SubmitSmRes/
+SUB_RES_LOG_FILEPATH_ARCH=/home/vccuser/logs/BeepGateway/SubmitSmResARCH/
+SUB_RES_LOG_FILENAME_ARCH=SubmitSmResponselogArc
+
+###################### DELIVER SM RECIEPT  LOG FILE WRITER CONFIGURATIONS ######################
+DEL_RECP_LOG_FILE_INTERVAL=2
+DEL_RECP_LOG_FILENAME=deliveryReportlog
+DEL_RECP_LOG_FILEPATH=/home/vccuser/logs/BeepGateway/delRe/
+DEL_RECP_LOG_FILEPATH_ARCH=/home/vccuser/logs/BeepGateway/delReArch/
+DEL_RECP_LOG_FILENAME_ARCH=deliveryReportlogAch
+
+###############################ERROR FILE LOG FILE WRITER CONFIGURATIONS##############bash
+ERROR_LOG_FILE_INTERVAL=3
+ERROR_LOG_FILENAME=errorReportlog
+ERROR_LOG_FILEPATH=/home/vccuser/logs/BeepGateway/
+ERROR_LOG_FILEPATH_ARCH=/home/vccuser/logs/BeepGateway/errlog/
+ERROR_LOG_FILENAME_ARCH=errorlogAch
+
+ENABLE_HEART_BEAT=0
+HEART_BEAT_PORT=7777
+
+
+******************************************************************************************
+
+vim smsgateway_log.properties
+log4j.appender.FA.File=/home/vccuser/logs/BeepGateway/vcc-smsgw-vas-svr-app01.log
+log4j.appender.errorLogger.File=/home/vccuser/logs/BeepGateway/smsg_error.log
+
+
+*******************************************************************************************
+
+/home/vccuser/development/BeepCall/BeepGateway/src]$ vim runBeepGateway.sh
+#!/bin/bash
+SERVICE=BeepGateway
+SITE=UGANDA
+APP_REPORT_FILE="/home/vccuser/development/monitor/ResetReport/AppReset.report"
+set -x
+SERVICE=BeepGateway
+cd  /home/vccuser/development/BeepCall/BeepGateway/src/
+. ~/.bash_profile
+echo "BeepGateway interface started ..."
+echo "$SERVICE for $SITE is started at `hostname` server on `date`" >>$APP_REPORT_FILE
+java -Xms512m -Xmx8192m  -cp /usr/openv/lib/java/*:lib/*:. -jar BeepGateway.jar 1>> BeepGateway.out 2>> BeepGateway.out
+echo "<--------------------$SERVICE Report for $SITE---------------------->">> $APP_REPORT_FILE
+echo "$SERVICE for $SITE is killed at `hostname` server on `date`" >>$APP_REPORT_FILE
+
+sh runBeepGateway.sh &
+
+****************** Hidden Test Message *******************
+insert into gmat_message_store (REQUEST_ID,ORIGINATING_NUMBER,DESTINATION_NUMBER,MESSAGE_TEXT,SUBMIT_TIME,STATUS,MESSAGE_TYPE,PROTOCOL_IDENTIFIER) values (3011,'Airtel','255786670689','This is a TEST SMS',now(),'R',40,64);
+ 
+************** Count Check BeepCall Hourly *************
+select count(*),date_format(CALL_TIME,'%Y-%m-%d %H') from call_log where CALL_TIME between '2022-06-23 00:00:00' and now() group by date_format(CALL_TIME,'%Y-%m-%d %H');
+
+
+
+
+***************** Test Message with content ****************
+insert into gmat_message_store (REQUEST_ID,ORIGINATING_NUMBER,DESTINATION_NUMBER,MESSAGE_TEXT,SUBMIT_TIME,STATUS,MESSAGE_TYPE,) values (3015,'Airtel','255786670689','This is a TEST SMS-1',now(),'R',40);

@@ -1,0 +1,103 @@
+*********************** Plivo installation ******************************* 
+
+su - roots
+tar -xvzf plivoInstallData_urllib3.tgz
+mkdir /home/vccuser/plivo
+cd plivoInstallData
+dnf group install "Development Tools"
+yum install gcc -y
+yum install epel-release
+yum install python-devel
+yum install python-pip
+su - root
+./plivo_install.sh /home/vccuser/plivo
+
+#sudo yum install python-setuptools -y
+
+PLIVO RHEL 8 SETUP 
+
+[root@vccapp01 plivoInstallData]# yum update -y
+[root@vccapp01 plivoInstallData]# yum install epel-release
+[root@vccapp01 plivoInstallData]# dnf group install “Development Tools”
+[root@vccapp01 plivoInstallData]# yum install python2
+[root@vccapp01 plivoInstallData]# sudo dnf install python2-devel
+[root@vccapp01 plivoInstallData]# mkdir -p /home/vccuser/development/Plivo
+[root@vccapp01 plivoInstallData]# mkdir -p /home/vccuser/logs/Plivo/
+[root@vccapp01 plivoInstallData]# ./plivo_install.sh /home/vccuser/plivo
+vim /home/vccuser/development/Plivo/lib/python2.7/site-packages/gevent/ssl.py
+Line No 438
+Replace SSLv3 with SSLv23
+def get_server_certificate(addr, ssl_version=PROTOCOL_SSLv23, ca_certs=None):
+
+
+vim /home/vccuser/development/Plivo/lib/python2.7/site-packages/gevent/socket.py
+line 696
+    _have_ssl = True => False
+
+[root@vccapp01 plivo]# vim /home/vccuser/development/Plivo/etc/plivo/default.conf
+DEFAULT_ANSWER_URL=http://127.0.0.1:9008/XMLIVRFlowControllerv_02/plivoservlet
+DEFAULT_RING_URL=http://127.0.0.1:9008/XMLIVRFlowControllerv_02/plivoservlet
+DEFAULT_HANGUP_URL=http://127.0.0.1:9008/XMLIVRFlowControllerv_02/plivoservlet
+LOG_FILE = /home/vccuser/logs/Plivo/plivo-rest.log
+LOG_FILE = /home/vccuser/logs/Plivo/plivo-outbound.log
+
+[root@vccapp01 plivo]# cd /home/vccuser/development/Plivo/bin
+[root@vccapp01 bin]# ./plivo start &
+
+
+
++ echo '**************************************************************'
+**************************************************************
++ echo 'Congratulations, Plivo Framework is now installed in /home/vccuser/plivo/'
+Congratulations, Plivo Framework is now installed in /home/vccuser/plivo/
++ echo '**************************************************************'
+**************************************************************
++ echo
+
++ echo '* Configure plivo :'
+* Configure plivo :
++ echo '    The default config is /home/vccuser/plivo//etc/plivo/default.conf'
+    The default config is /home/vccuser/plivo//etc/plivo/default.conf
++ echo '    Here you can add/remove/modify config files to run mutiple plivo instances'
+    Here you can add/remove/modify config files to run mutiple plivo instances
++ echo
+
++ echo '* To Start Plivo :'
+* To Start Plivo :
++ echo '    /etc/init.d/plivo start'
+    /etc/init.d/plivo start
++ echo
+
++ echo '* Configure plivo cache:'
+* Configure plivo cache:
++ echo '    The config is /home/vccuser/plivo//etc/plivo/cache/cache.conf'
+    The config is /home/vccuser/plivo//etc/plivo/cache/cache.conf
++ echo '    IMPORTANT: you need to install a redis server for plivo cache server!'
+    IMPORTANT: you need to install a redis server for plivo cache server!
++ echo '               Check with your sysadmin !'
+               Check with your sysadmin !
++ echo
+
++ echo '* To Start Plivo cache server:'
+* To Start Plivo cache server:
++ echo '    /etc/init.d/plivocache start'
+    /etc/init.d/plivocache start
++ echo
+
++ echo '**************************************************************'
+**************************************************************
++ echo ''
+
++ echo ''
+
++ echo 'Visit http://www.plivo.org for documentation and examples'
+Visit http://www.plivo.org for documentation and examples
+
+
+
+Default Plivo configuration file:
+/home/vccuser/plivo/etc/plivo/default.conf
+
+
+ cd /home/vccuser/development/plivo/bin/
+./plivo start

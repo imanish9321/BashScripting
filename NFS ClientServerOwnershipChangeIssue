@@ -1,0 +1,31 @@
+###############################################
+# NFS Share ownership change issue resolution #
+###############################################
+
+server	uid	gid 	
+1  	1067	1070	(server)
+2	1070	1073	(server)
+3	1067	1070	(Client)
+4	1070	1073	(Client)
+5	1067	1070	(Client)
+6	1044	1047	(Client)
+7	1044	1047	(Client)
+
+########## ID Mapping NFS Server Issue #############
+First, ensure no processes are using vccuser by running:
+	]# pkill -u vccuser
+Then, change the UID and GID on servers 6 and 7 (you can also perform this on other servers if necessary):
+
+	]# usermod -u 1067 vccuser
+	]# groupmod -g 1070 vccuser
+You may also need to update the ownership of files on these servers to reflect the new UID/GID:
+
+	]# find /path/to/files -user 1044 -exec chown 1067:1070 {} \;
+	]# find /path/to/files -group 1047 -exec chgrp 1070 {} \;
+
+Update /etc/passwd and /etc/group Files: Ensure the vccuser entry in the /etc/passwd and /etc/group files are consistent across all servers.
+Example:
+
+vccuser:x:1067:1070::/home/vccuser:/bin/bash
+Verify UID/GID Consistency: After the changes, verify the UID and GID of vccuser using:
+	]# id vccuser

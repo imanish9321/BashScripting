@@ -1,0 +1,57 @@
+#!/bin/bash
+#Script Name: System Health Check
+#Description: This script will peroform System Health Check. This includes checking Storage, Memory, Server Load.
+#Created by: Manish Yadav
+#From: Telemune Suppport Team
+#Date: 17 April 2025
+#set -x
+
+
+ALERT=50
+ALERT1=5
+IP=`hostname -I`
+IP_ADDRESSES=("10.130.5.11" "10.130.5.12" "10.130.5.13")
+
+
+
+echo "#######################################"
+echo "  QcellSl: System Health Check Report  "
+echo "#######################################"
+
+echo "######################################"
+echo "Checking Server Disk Space ..."
+
+NORMAL_DISK_USAGE=true
+df -H | grep -vE '^Filesystem|tmpfs' | awk '{ print $5 " " $6 }' | while read output; do
+    usep=$(echo $output | awk '{ print $1 }' | cut -d'%' -f1)
+    partition=$(echo $output | awk '{ print $2 }')
+
+    if [ $usep -ge $ALERT ]; then
+        echo "Running out of space \"$partition ($usep%)\" on $(hostname)($IP) at $(date)"
+        NORMAL_DISK_USAGE=false
+    fi
+done
+if $NORMAL_DISK_USAGE; then
+        echo "Server Disc Usage Normal on $(hostname)($IP) at $(date)"
+fi
+
+echo "#####################################"
+echo "Checking Server Memory Usage ..."
+        Memory_Usage=$(free -h  |head -2 |  tail -1 | awk '{print $3/$2*100}' | awk -F '.' '{print $1}')
+        if [ "$Memory_Usage" -ge $ALERT ]
+        then
+                echo "Running out of memory i.e. $Memory_Usage% on $(hostname)($IP) at $(date)"
+        else
+                echo "Memory Usage Normal on $(hostname)($IP) at $(date)"
+        fi
+
+echo "#####################################"
+echo "Checking Server Load ..."
+# Get the load averages from the `uptime` command
+        load=$(uptime | awk -F 'load average:' '{print $2}' | awk '{print $1}' | awk -F '.' '{print $1}')
+        if [ "$load" -ge $ALERT1 ]
+        then
+                echo "Server Load Average above threshold: $load on $(hostname)($IP) at $(date)"
+        else
+                echo "Server Load Average Normal on $(hostname)($IP) at $(date)"
+        fi

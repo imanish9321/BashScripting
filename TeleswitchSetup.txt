@@ -1,0 +1,23 @@
+*************************** Teleswitch Setup **************************
+
+su - root
+cd /home/vccuser/
+mkdir /home/vccuser/teleswitch
+cd /home/teleswitch/
+/home/teleswitch ]# ls -ltrh
+/home/teleswitch ]# ln -s /home/vccuser/teleswitch/ /home/teleswitch
+/home/teleswitch ]# ls -ltrh
+total 0
+lrwxrwxrwx 1 root root 25 Aug 22 09:54 teleswitch -> /home/vccuser/teleswitch/
+[ PROD root@TZLPBCSNWNWP04 /home/vccuser/Teleswitch_Installation_Centos 7]# cd deps/
+[ PROD root@TZLPBCSNWNWP04 /home/vccuser/Teleswitch_Installation_Centos 7/Teleswitch_rpm]# yum localinstall *.rpm -y
+[ PROD root@TZLPBCSNWNWP04 /home/vccuser/Teleswitch_Installation_Centos 7]# cd Teleswitch_rpm/
+[ PROD root@TZLPBCSNWNWP04 /home/vccuser/Teleswitch_Installation_Centos 7/Teleswitch_rpm]# yum localinstall *.rpm -y
+]# chown -R vccuser.vccuser /home/vccuser/teleswitch/
+]# ls -ltrh
+[ PROD root@TZLPBCSNWNWP04 /home/vccuser/teleswitch]# cd usr/bin/
+[ PROD root@TZLPBCSNWNWP04 /home/vccuser/teleswitch/usr/bin] cp freeswitch teleswitch
+]# cp  /home/vccuser/Teleswitch_Installation_Centos\ 7/run_teleswitch.sh.txt /home/vccuser/
+]# cd /home/vccuser/teleswitch/
+]# /home/vccuser/teleswitch/usr/bin/teleswitch -nonat -conf /home/vccuser/teleswitch/etc/teleswitch/ -log /home/vccuser/teleswitch/var/log -db /home/vccuser/teleswitch/var/
+
